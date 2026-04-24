@@ -3,7 +3,7 @@
 A single-node Proxmox setup running self-hosted services for personal and family use. The focus is on learning by doing - setting up, maintaining, and eventually monitoring real infrastructure rather than just reading about it.
 
 Infrastructure automation is handled via Ansible.
-Repository: [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
+Repository (currently set to private): [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
 
 ## Hardware
 
@@ -41,7 +41,7 @@ Repository: [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
 ## Automation
 
 Infrastructure is managed via Ansible. The control node runs as a dedicated LXC container on the Proxmox host.
-Repository: [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
+Repository (currently set to private): [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
 
 Current playbooks:
 - `update.yml` - updates all LXC containers
