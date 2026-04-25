@@ -9,17 +9,17 @@ Repository (currently set to private): [homelab-ansible](https://github.com/giga
 
 | Component | Details |
 |-----------|---------|
-| Device | ASUS PN53 Mini PC |
+| Device | ASUS PN52 Mini PC |
 | CPU | AMD Ryzen 9 5900HX |
 | RAM | 16GB |
-| Storage | 2x 3TB HDD - ZFS mirror via USB enclosure |
+| Storage | 2x 3TB HDD - ZFS, mirror via USB enclosure |
 | Hypervisor | Proxmox VE |
 
 ## Network
 
 | Device | IP | Role |
 |--------|----|------|
-| UniFi Express | 192.168.1.1 | Gateway / Router / DHCP Server |
+| UniFi Express 6 | 192.168.1.1 | Gateway / Router / DHCP Server |
 | USW Flex Mini - HAR | 192.168.1.4 | Main switch to patch panel |
 | USW Flex Mini - Büro | 192.168.1.5 | Office switch |
 | AP Wohnzimmer | 192.168.1.2 | Access Point |
