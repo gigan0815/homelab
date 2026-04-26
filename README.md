@@ -47,8 +47,11 @@ Infrastructure is managed via Ansible. The control node runs as a dedicated LXC 
 Repository (currently set to private): [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
 
 Current playbooks:
-- `update.yml` - updates all LXC containers
+- `update.yml` - updates all LXC containers + Discord notification on reboot
 - `paperless_backup.yml` - exports paperless-ngx and syncs to OneDrive
+- `node_exporter.yml` - deploys Node Exporter on all containers
+- `prometheus.yml` - deploys Prometheus on the monitoring container
+- `grafana.yml` - deploys Grafana on the monitoring container
 
 ## Backup
 
@@ -66,7 +69,7 @@ Storage redundancy is provided via a hardware RAID mirror on the USB enclosure h
 
 ## Roadmap
 - [ ] Migrate USB RAID to ZFS mirror
-- [x] Deploy monitoring stack (Prometheus + Grafana)
 - [ ] Set up Kubernetes cluster
 - [ ] Expand Ansible roles for all services
 - [ ] Add Ansible role for Kubernetes cluster setup
+- [x] Deploy monitoring stack (Prometheus + Grafana)
