@@ -37,6 +37,9 @@ Repository (currently set to private): [homelab-ansible](https://github.com/giga
 | jellyfin | 192.168.1.17 | 8096 | Media server |
 | bazarr | 192.168.1.18 | 6767 | Subtitle manager |
 | ansible | 192.168.1.19 | - | Ansible control node |
+| - | 192.168.1.20 | - | Reserved, fallback IP for conflict solving of Unifi Express 6 |
+| prometheus | 192.168.1.21 | 9090 | Metrics collection |
+| grafana | 192.168.1.22 | 3000 | Metrics visualization |
 
 ## Automation
 
@@ -63,7 +66,7 @@ Storage redundancy is provided via a hardware RAID mirror on the USB enclosure h
 
 ## Roadmap
 - [ ] Migrate USB RAID to ZFS mirror
-- [ ] Deploy monitoring stack (Prometheus + Grafana)
+- [x] Deploy monitoring stack (Prometheus + Grafana)
 - [ ] Set up Kubernetes cluster
 - [ ] Expand Ansible roles for all services
 - [ ] Add Ansible role for Kubernetes cluster setup
