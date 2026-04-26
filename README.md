@@ -62,7 +62,17 @@ Current playbooks:
 Storage redundancy is provided via a hardware RAID mirror on the USB enclosure housing the 2x 3TB drives.
 **Note:** USB-based RAID is a known limitation. Migration to ZFS mirror is planned as a future improvement.
 
+## Alerting
 
+Alerts are configured in Grafana and sent to the `#homelab-alerts` Discord channel.
+
+| Alert | Condition | Pending period |
+|-------|-----------|----------------|
+| Container unreachable | Node Exporter not responding | 2m |
+| High CPU usage | CPU > 80% | 15m |
+| High RAM usage | RAM > 85% | 5m |
+| High SWAP usage | SWAP > 50% | 10m |
+| High disk usage | Disk > 85% | 5m |
 
 ## Architecture
 ![Architecture](docs/architecture.svg)
