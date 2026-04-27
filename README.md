@@ -1,6 +1,6 @@
 # Homelab
 
-A single-node Proxmox setup running self-hosted services for personal and family use. The focus is on learning by doing - setting up, maintaining, and eventually monitoring real infrastructure rather than just reading about it.
+A single-node Proxmox setup running self-hosted services for personal and family use. The focus is on learning by doing - setting up, maintaining and monitoring real infrastructure rather than just reading about it.
 
 Infrastructure automation is handled via Ansible.
 Repository: [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
