@@ -52,6 +52,7 @@ Current playbooks:
 - `node_exporter.yml` - deploys Node Exporter on all containers
 - `prometheus.yml` - deploys Prometheus on the monitoring container
 - `grafana.yml` - deploys Grafana on the monitoring container
+- `kubernetes.yml` - deploys Kubernetes cluster on VMs
 
 ## Backup
 
@@ -79,7 +80,7 @@ Alerts are configured in Grafana and sent to the `#homelab-alerts` Discord chann
 
 ## Roadmap
 - [ ] Migrate USB RAID to ZFS mirror
-- [ ] Set up Kubernetes cluster
+- [x] Set up Kubernetes cluster (learning environment)
 - [ ] Expand Ansible roles for all services
 - [ ] Add Ansible role for Kubernetes cluster setup
 - [x] Deploy monitoring stack (Prometheus + Grafana)
