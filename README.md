@@ -1,4 +1,4 @@
-# Homelab
+# homelab
 
 A single-node Proxmox setup running self-hosted services for personal and family use. The focus is on learning by doing - setting up, maintaining and monitoring real infrastructure rather than just reading about it.
 
@@ -54,6 +54,18 @@ Current playbooks:
 - `grafana.yml` - deploys Grafana on the monitoring container
 - `kubernetes.yml` - deploys Kubernetes cluster on VMs
 
+## Kubernetes
+
+3-node cluster running on Proxmox VMs for learning purposes.
+Cluster setup is automated via Ansible – see [homelab-ansible](https://github.com/gigan0815/homelab-ansible).
+Kubernetes manifests are managed in a separate repository – see [homelab-kubernetes](https://github.com/gigan0815/homelab-kubernetes).
+
+| Node | IP | Role |
+|------|-----|------|
+| k8smaster | 192.168.1.80 | control-plane |
+| k8sworker1 | 192.168.1.81 | worker |
+| k8sworker2 | 192.168.1.82 | worker |
+
 ## Backup
 
 | Service | Destination | Schedule | Method |
@@ -80,7 +92,8 @@ Alerts are configured in Grafana and sent to the `#homelab-alerts` Discord chann
 
 ## Roadmap
 - [ ] Migrate USB RAID to ZFS mirror
-- [x] Set up Kubernetes cluster (learning environment)
 - [ ] Expand Ansible roles for all services
 - [ ] Add Ansible role for Kubernetes cluster setup
+- [ ] CI/CD pipeline with GitHub Actions
+- [x] Set up Kubernetes cluster (learning environment)
 - [x] Deploy monitoring stack (Prometheus + Grafana)
