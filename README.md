@@ -1,5 +1,4 @@
 # homelab
-
 A single-node Proxmox setup running self-hosted services for personal and family use. The focus is on learning by doing - setting up, maintaining and monitoring real infrastructure rather than just reading about it.
 
 Infrastructure automation is handled via Ansible.
@@ -12,7 +11,7 @@ Repository: [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
 | Device | ASUS PN52 Mini PC |
 | CPU | AMD Ryzen 9 5900HX |
 | RAM | 16GB |
-| Storage | 2x 3TB HDD - ZFS, mirror via USB enclosure |
+| Storage | 2x 3TB HDD - ZFS mirror |
 | Hypervisor | Proxmox VE |
 
 ## Network
@@ -37,7 +36,7 @@ Repository: [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
 | jellyfin | 192.168.1.17 | 8096 | Media server |
 | bazarr | 192.168.1.18 | 6767 | Subtitle manager |
 | ansible | 192.168.1.19 | - | Ansible control node |
-| - | 192.168.1.20 | - | Reserved, fallback IP for conflict solving of Unifi Express 6 |
+| - | 192.168.1.20 | - | Reserved, fallback IP for UniFi Express 6 |
 | prometheus | 192.168.1.21 | 9090 | Metrics collection |
 | grafana | 192.168.1.22 | 3000 | Metrics visualization |
 
@@ -72,8 +71,7 @@ Kubernetes manifests are managed in a separate repository – see [homelab-kuber
 |---------|-------------|----------|--------|
 | paperless-ngx | OneDrive | Daily 02:00 | document_exporter + rclone |
 
-Storage redundancy is provided via a hardware RAID mirror on the USB enclosure housing the 2x 3TB drives.
-**Note:** USB-based RAID is a known limitation. Migration to ZFS mirror is planned as a future improvement.
+Storage redundancy is provided via ZFS mirror (2x 3TB drives).
 
 ## Alerting
 
@@ -88,12 +86,14 @@ Alerts are configured in Grafana and sent to the `#homelab-alerts` Discord chann
 | High disk usage | Disk > 85% | 5m |
 
 ## Architecture
+
 ![Architecture](docs/architecture.svg)
 
 ## Roadmap
-- [ ] Migrate USB RAID to ZFS mirror
+
 - [ ] Expand Ansible roles for all services
 - [ ] Add Ansible role for Kubernetes cluster setup
 - [ ] CI/CD pipeline with GitHub Actions
+- [x] Migrate USB RAID to ZFS mirror
 - [x] Set up Kubernetes cluster (learning environment)
 - [x] Deploy monitoring stack (Prometheus + Grafana)
