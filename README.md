@@ -43,6 +43,7 @@ Repository: [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
 ## Automation
 
 Infrastructure is managed via Ansible. The control node runs as a dedicated LXC container on the Proxmox host.
+
 Repository: [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
 
 Current playbooks:
@@ -56,8 +57,10 @@ Current playbooks:
 ## Kubernetes
 
 3-node cluster running on Proxmox VMs for learning purposes.
-Cluster setup is automated via Ansible – see [homelab-ansible](https://github.com/gigan0815/homelab-ansible).
-Kubernetes manifests are managed in a separate repository – see [homelab-kubernetes](https://github.com/gigan0815/homelab-kubernetes).
+
+Cluster setup is automated via Ansible, see [homelab-ansible](https://github.com/gigan0815/homelab-ansible).
+
+Kubernetes manifests are managed in a separate repository, see [homelab-kubernetes](https://github.com/gigan0815/homelab-kubernetes).
 
 | Node | IP | Role |
 |------|-----|------|
