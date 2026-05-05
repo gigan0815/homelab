@@ -98,7 +98,7 @@ Alerts are configured in Grafana and sent to the `#homelab-alerts` Discord chann
 
 - [ ] Expand Ansible roles for all services
 - [ ] Add Ansible role for Kubernetes cluster setup
-- [ ] CI/CD pipeline with GitHub Actions
+- [x] CI/CD pipeline with GitHub Actions
 - [x] Migrate USB RAID to ZFS mirror
 - [x] Set up Kubernetes cluster (learning environment)
 - [x] Deploy monitoring stack (Prometheus + Grafana)
