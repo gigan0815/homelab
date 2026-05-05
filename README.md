@@ -39,6 +39,7 @@ Repository: [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
 | - | 192.168.1.20 | - | Reserved, fallback IP for UniFi Express 6 |
 | prometheus | 192.168.1.21 | 9090 | Metrics collection |
 | grafana | 192.168.1.22 | 3000 | Metrics visualization |
+| github-runner | 192.168.1.23 | - | GitHub Actions self-hosted runner |
 
 ## Automation
 
@@ -53,6 +54,7 @@ Current playbooks:
 - `prometheus.yml` - deploys Prometheus on the monitoring container
 - `grafana.yml` - deploys Grafana on the monitoring container
 - `kubernetes.yml` - deploys Kubernetes cluster on VMs
+- `github_runner.yml` - deploys GitHub Actions self-hosted runner
 
 ## Kubernetes
 
