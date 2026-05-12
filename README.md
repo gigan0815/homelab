@@ -107,7 +107,7 @@ See [docs/disaster-recovery.md](docs/disaster-recovery.md) for the recovery proc
 ## Roadmap
 
 - [ ] Expand Ansible roles for all services
-- [ ] Add Ansible role for Kubernetes cluster setup
+- [x] Add Ansible role for Kubernetes cluster setup
 - [x] CI/CD pipeline with GitHub Actions
 - [x] Migrate USB RAID to ZFS mirror
 - [x] Set up Kubernetes cluster (learning environment)
