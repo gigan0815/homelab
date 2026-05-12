@@ -1,4 +1,5 @@
 # homelab
+
 A single-node Proxmox setup running self-hosted services for personal and family use. The focus is on learning by doing - setting up, maintaining and monitoring real infrastructure rather than just reading about it.
 
 Infrastructure automation is handled via Ansible.
@@ -59,9 +60,7 @@ Current playbooks:
 ## Kubernetes
 
 3-node cluster running on Proxmox VMs for learning purposes.
-
 Cluster setup is automated via Ansible, see [homelab-ansible](https://github.com/gigan0815/homelab-ansible).
-
 Kubernetes manifests are managed in a separate repository, see [homelab-kubernetes](https://github.com/gigan0815/homelab-kubernetes).
 
 | Node | IP | Role |
@@ -69,6 +68,13 @@ Kubernetes manifests are managed in a separate repository, see [homelab-kubernet
 | k8smaster | 192.168.1.80 | control-plane |
 | k8sworker1 | 192.168.1.81 | worker |
 | k8sworker2 | 192.168.1.82 | worker |
+
+## CI/CD
+
+GitHub Actions workflows run on a self-hosted runner deployed on the github-runner LXC container.
+
+- `homelab-ansible` repository runs Ansible syntax checks on all playbooks
+- `homelab-kubernetes` repository validates all Kubernetes manifests with kubeconform
 
 ## Backup
 
