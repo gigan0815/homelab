@@ -100,6 +100,10 @@ Alerts are configured in Grafana and sent to the `#homelab-alerts` Discord chann
 
 ![Architecture](docs/architecture.svg)
 
+## Disaster Recovery
+
+See [docs/disaster-recovery.md](docs/disaster-recovery.md) for the recovery procedure, backup inventory, and known gaps.
+
 ## Roadmap
 
 - [ ] Expand Ansible roles for all services
