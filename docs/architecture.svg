@@ -1,6 +1,6 @@
-<svg width="100%" viewBox="0 0 680 940" role="img" xmlns="http://www.w3.org/2000/svg">
+<svg width="100%" viewBox="0 0 680 1080" role="img" xmlns="http://www.w3.org/2000/svg">
 <title>Homelab architecture diagram</title>
-<desc>Network and server architecture with Proxmox host, LXC containers, Kubernetes cluster, Windows Server AD lab, and GitHub Actions runner serving two repositories</desc>
+<desc>Network and server architecture with Proxmox host, LXC containers, Kubernetes cluster, Windows Server AD lab, dedicated TrueNAS storage, and GitHub Actions runner serving two repositories</desc>
 <defs>
   <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
     <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -50,7 +50,7 @@
 
 <!-- Proxmox group -->
 <rect x="24" y="234" width="632" height="616" rx="12" fill="none" stroke="rgb(186,117,23)" stroke-width="1.5" stroke-dasharray="6 3"/>
-<text x="40" y="252" style="font-style:italic;fill:rgb(186,117,23);font-size:12px;">Proxmox Host · ASUS PN52 · AMD Ryzen 9 5900HX · 16GB RAM · ZFS · 2× 3TB</text>
+<text x="40" y="252" style="font-style:italic;fill:rgb(186,117,23);font-size:12px;">Proxmox Host · ASUS PN52 · AMD Ryzen 9 5900HX · 16GB RAM · NVMe/SSD (bulk storage on NAS)</text>
 
 <!-- Media stack -->
 <rect x="40" y="260" width="292" height="176" rx="8" fill="none" stroke="rgba(222,220,209,0.15)" stroke-width="0.8" stroke-dasharray="4 3"/>
@@ -139,19 +139,41 @@
   <text x="464" y="666" text-anchor="middle" dominant-baseline="central" style="fill:rgb(133,183,235);font-size:12px;">192.168.1.50 · DC · DNS</text>
 </g>
 
+<!-- Connection: Proxmox -> NAS (NFS) -->
+<line x1="340" y1="850" x2="340" y2="884" stroke="rgba(222,220,209,0.4)" stroke-width="1" marker-end="url(#arrow)"/>
+<text x="378" y="868" style="font-style:italic;fill:rgb(194,192,182);font-size:12px;">NFS</text>
+
+<!-- NAS group - separate hardware from Proxmox host -->
+<rect x="24" y="884" width="632" height="144" rx="12" fill="none" stroke="rgb(29,120,150)" stroke-width="1.5" stroke-dasharray="6 3"/>
+<text x="40" y="902" style="font-style:italic;fill:rgb(29,150,180);font-size:12px;">NAS · Intel i5-6400 · 16GB DDR4 · TrueNAS SCALE</text>
+<g><rect x="40" y="912" width="180" height="44" rx="6" stroke-width="0.5" style="fill:rgb(8,68,90);stroke:rgb(93,180,202);"/>
+  <text x="130" y="928" text-anchor="middle" dominant-baseline="central" style="fill:rgb(159,213,225);font-size:14px;font-weight:500;">TrueNAS</text>
+  <text x="130" y="942" text-anchor="middle" dominant-baseline="central" style="fill:rgb(93,180,202);font-size:12px;">192.168.1.6</text></g>
+<g><rect x="236" y="912" width="200" height="44" rx="6" stroke-width="0.5" style="fill:rgb(8,68,90);stroke:rgb(93,180,202);"/>
+  <text x="336" y="928" text-anchor="middle" dominant-baseline="central" style="fill:rgb(159,213,225);font-size:14px;font-weight:500;">Pool: enclosure</text>
+  <text x="336" y="942" text-anchor="middle" dominant-baseline="central" style="fill:rgb(93,180,202);font-size:12px;">ZFS mirror · 2× 3TB WD</text></g>
+<g><rect x="452" y="912" width="164" height="44" rx="6" stroke-width="0.5" style="fill:rgb(8,68,90);stroke:rgb(93,180,202);"/>
+  <text x="534" y="928" text-anchor="middle" dominant-baseline="central" style="fill:rgb(159,213,225);font-size:14px;font-weight:500;">node exporter</text>
+  <text x="534" y="942" text-anchor="middle" dominant-baseline="central" style="fill:rgb(93,180,202);font-size:12px;">Docker app · :9100</text></g>
+<text x="40" y="982" style="fill:rgb(194,192,182);font-size:12px;">NFS exports (mounted on Proxmox host, bind-mounted into LXCs):</text>
+<text x="52" y="1000" style="fill:rgb(180,178,169);font-size:12px;">subvol-101-disk-0 (media) → media stack · subvol-100-disk-0 (paperless) → paperless-ngx</text>
+<text x="52" y="1016" style="fill:rgb(180,178,169);font-size:12px;">backups → nas-backups (Proxmox vzdump target)</text>
+
 <!-- Legend -->
-<line x1="40" y1="878" x2="640" y2="878" stroke="rgba(222,220,209,0.3)" stroke-width="0.5"/>
-<g><rect x="40" y="892" width="12" height="12" rx="2" style="fill:rgb(113,43,19);stroke:rgb(240,153,123);"/></g>
-<text x="58" y="903" style="fill:rgb(194,192,182);font-size:12px;">Documents</text>
-<g><rect x="140" y="892" width="12" height="12" rx="2" style="fill:rgb(68,68,65);stroke:rgb(180,178,169);"/></g>
-<text x="158" y="903" style="fill:rgb(194,192,182);font-size:12px;">Media</text>
-<g><rect x="206" y="892" width="12" height="12" rx="2" style="fill:rgb(8,80,65);stroke:rgb(93,202,165);"/></g>
-<text x="224" y="903" style="fill:rgb(194,192,182);font-size:12px;">Infra / Backup</text>
-<g><rect x="316" y="892" width="12" height="12" rx="2" style="fill:rgb(39,80,10);stroke:rgb(151,196,89);"/></g>
-<text x="334" y="903" style="fill:rgb(194,192,182);font-size:12px;">Monitoring</text>
-<g><rect x="410" y="892" width="12" height="12" rx="2" style="fill:rgb(60,52,137);stroke:rgb(175,169,236);"/></g>
-<text x="428" y="903" style="fill:rgb(194,192,182);font-size:12px;">Kubernetes / AD</text>
-<g><rect x="530" y="892" width="12" height="12" rx="2" style="fill:rgb(99,56,6);stroke:rgb(239,159,39);"/></g>
-<text x="548" y="903" style="fill:rgb(194,192,182);font-size:12px;">CI/CD</text>
+<line x1="40" y1="1044" x2="640" y2="1044" stroke="rgba(222,220,209,0.3)" stroke-width="0.5"/>
+<g><rect x="40" y="1056" width="12" height="12" rx="2" style="fill:rgb(113,43,19);stroke:rgb(240,153,123);"/></g>
+<text x="58" y="1067" style="fill:rgb(194,192,182);font-size:12px;">Documents</text>
+<g><rect x="140" y="1056" width="12" height="12" rx="2" style="fill:rgb(68,68,65);stroke:rgb(180,178,169);"/></g>
+<text x="158" y="1067" style="fill:rgb(194,192,182);font-size:12px;">Media</text>
+<g><rect x="206" y="1056" width="12" height="12" rx="2" style="fill:rgb(8,80,65);stroke:rgb(93,202,165);"/></g>
+<text x="224" y="1067" style="fill:rgb(194,192,182);font-size:12px;">Infra / Backup</text>
+<g><rect x="316" y="1056" width="12" height="12" rx="2" style="fill:rgb(39,80,10);stroke:rgb(151,196,89);"/></g>
+<text x="334" y="1067" style="fill:rgb(194,192,182);font-size:12px;">Monitoring</text>
+<g><rect x="410" y="1056" width="12" height="12" rx="2" style="fill:rgb(60,52,137);stroke:rgb(175,169,236);"/></g>
+<text x="428" y="1067" style="fill:rgb(194,192,182);font-size:12px;">Kubernetes / AD</text>
+<g><rect x="530" y="1056" width="12" height="12" rx="2" style="fill:rgb(99,56,6);stroke:rgb(239,159,39);"/></g>
+<text x="548" y="1067" style="fill:rgb(194,192,182);font-size:12px;">CI/CD</text>
+<g><rect x="600" y="1056" width="12" height="12" rx="2" style="fill:rgb(8,68,90);stroke:rgb(93,180,202);"/></g>
+<text x="618" y="1067" style="fill:rgb(194,192,182);font-size:12px;">NAS</text>
 
 </svg>

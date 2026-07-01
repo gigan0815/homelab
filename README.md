@@ -12,7 +12,7 @@ Repository: [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
 | Device | ASUS PN52 Mini PC |
 | CPU | AMD Ryzen 9 5900HX |
 | RAM | 16GB |
-| Storage | 2x 3TB HDD - ZFS mirror |
+| Storage | NVMe/SSD only (bulk storage moved to dedicated NAS, see below) |
 | Hypervisor | Proxmox VE |
 
 ## Network
@@ -24,6 +24,7 @@ Repository: [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
 | USW Flex Mini - Büro | 192.168.1.5 | Office switch |
 | AP Wohnzimmer | 192.168.1.2 | Access Point |
 | AP Obergeschoss | 192.168.1.3 | Access Point |
+| NAS (TrueNAS) | 192.168.1.6 | NAS / storage |
 
 ## Services
 
@@ -42,6 +43,29 @@ Repository: [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
 | grafana | 192.168.1.22 | 3000 | Metrics visualization |
 | github-runner | 192.168.1.23 | - | GitHub Actions self-hosted runner |
 
+## Storage / NAS
+
+Bulk storage runs on a dedicated **TrueNAS SCALE** box, separate from the Proxmox host. Originally the 2x 3TB ZFS mirror lived in a USB enclosure attached directly to the PN52 (see Roadmap); the enclosure's USB bridge proved unreliable, so the drives were moved to native SATA on standalone NAS hardware.
+
+| Component | Details |
+| --- | --- |
+| Device | Intel i5-6400, 16GB DDR4 |
+| OS | TrueNAS SCALE |
+| IP | 192.168.1.6 |
+| Pool | `enclosure` (legacy name, kept — too much downstream config references it), 2x 3TB WD mirror, ZFS |
+
+Proxmox LXCs consume NAS storage over **NFS**, mounted on the Proxmox host and bind-mounted into each unprivileged container (NFS is not mounted inside the LXCs directly):
+
+| NFS export | Consumer |
+| --- | --- |
+| `/mnt/enclosure/subvol-101-disk-0` (media) | *arr stack + jellyfin |
+| `/mnt/enclosure/subvol-100-disk-0` (paperless) | paperless-ngx |
+| `/mnt/enclosure/backups` (pve-backups) | Proxmox backup job |
+
+Monthly scrub and monthly SMART long self-tests are scheduled on TrueNAS (offset from each other to avoid overlapping I/O load). Pool health is monitored via node_exporter (deployed on TrueNAS as a Docker app through TrueNAS's own Apps system, not Ansible) feeding a Grafana alert — see Alerting section below.
+
+
+
 ## Automation
 
 Infrastructure is managed via Ansible. The control node runs as a dedicated LXC container on the Proxmox host.
@@ -57,6 +81,8 @@ Current playbooks:
 - `grafana.yml` - deploys Grafana on the monitoring container
 - `kubernetes.yml` - deploys Kubernetes cluster on VMs
 - `github_runner.yml` - deploys GitHub Actions self-hosted runner
+
+The NAS (TrueNAS SCALE) is **not** Ansible-managed — it's an appliance OS with its own update mechanism and Apps/Docker system for deploying services (e.g. node_exporter). It's listed in the Ansible inventory for reference only and explicitly excluded from `update.yml` and `node_exporter.yml`. NFS shares are configured through the TrueNAS UI, not `/etc/exports`.
 
 ## Kubernetes
 
@@ -92,8 +118,9 @@ GitHub Actions workflows run on a self-hosted runner deployed on the github-runn
 | Service | Destination | Schedule | Method |
 | --- | --- | --- | --- |
 | paperless-ngx | OneDrive | Daily 02:00 | document_exporter + rclone |
+| LXC containers (100-110) | `nas-backups` (NFS, TrueNAS) | Sun 01:00 | Proxmox vzdump, keep-last=5 — **pending re-enable after NAS migration, see Roadmap** |
 
-Storage redundancy is provided via ZFS mirror (2x 3TB drives).
+Storage redundancy is provided via ZFS mirror (2x 3TB drives) on the dedicated NAS — see Storage / NAS section above. Media library has no off-box backup (accepted risk, content is re-downloadable).
 
 ## Alerting
 
@@ -106,6 +133,7 @@ Alerts are configured in Grafana and sent to the `#homelab-alerts` Discord chann
 | High RAM usage | RAM > 85% | 5m |
 | High SWAP usage | SWAP > 50% | 10m |
 | High disk usage | Disk > 85% | 5m |
+| ZFS Pool Health | Pool state (`enclosure` on TrueNAS) degraded/faulted/suspended/unavail | 0s (immediate) |
 
 ## Architecture
 
@@ -120,6 +148,8 @@ See [docs/windows-ad-lab.md](https://github.com/gigan0815/homelab/blob/main/docs
 ## Roadmap
 
 - [ ] Expand Ansible roles for all services
+- [ ] Re-enable PVE backup job pointed at `nas-backups` (temporarily disabled during NAS migration)
+- [x] Migrate ZFS pool off Proxmox host (USB enclosure) to dedicated TrueNAS NAS
 - [x] Add Ansible role for Kubernetes cluster setup
 - [x] CI/CD pipeline with GitHub Actions
 - [x] Migrate USB RAID to ZFS mirror
