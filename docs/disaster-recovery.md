@@ -12,6 +12,14 @@ This document describes how to recover the homelab in case of hardware failure o
 ### Single drive failure (NAS ZFS mirror)
 ZFS mirror handles this automatically. Replace failed drive in the TrueNAS box, run `zpool replace` (via TrueNAS UI: Storage → pool → Replace Disk, or CLI). No service interruption — Proxmox LXCs keep working since they mount over NFS and don't see the underlying disk change.
 
+**Current status (as of 2026-07-02): one mirror member is already defective and awaiting replacement.** The drive with serial `WD-WCAWZ2181253` (`ata-WDC_WD30EZRX-00MMMB0_WD-WCAWZ2181253`) has a confirmed, repeatable read failure at LBA `5,860,378,112`, in unallocated space (~99.997% through the disk), so `zpool status` stays clean (`No known data errors`). The other member (`WD-WCAWZ0415134`) is confirmed healthy. Replacement is market-constrained (open-ended); the plan is monitor-and-replace-when-available, not urgent replacement. Notes for whoever handles this:
+- **Identify drives by `by-id`/serial, never `/dev/sdX`** — the letters have already swapped once and drift on any reboot/hardware move.
+- **Do not force-repair the bad sector** (`dd` to that LBA): it sits near the ZFS vdev labels on a live member; a raw write risks turning a contained defect into a real pool problem for a cosmetic (quieter SMART) gain. The `zpool replace` handles it properly.
+- **This drive's firmware under-reports self-test LBAs by 2³² in the *legacy* log.** Read LBAs from `smartctl -x` (extended log), never `smartctl -l selftest`.
+- **Escalate to urgent** (accelerate sourcing / consider `zpool offline`) if `Reallocated_Sector_Ct` > 0, `Current_Pending_Sector` > 1, a second/different bad LBA appears, or anything shows in `zpool status -v`.
+- Replacement command: `zpool replace enclosure 53fed87e-1385-454e-a202-642647b0e61c <new-device-by-id>`
+- **Monitoring/alerting for this is live:** monthly SMART long test (Cron Job, both drives) + TrueNAS Alert Service → Discord on Failed Selftest / Uncorrected Errors / Pool-not-healthy, tested 2026-07-02. The monthly long test will report the known read failure *every month* — that recurring "Failed Selftest" alert is expected; do not mute it, or a genuinely new failure would be missed.
+
 ### NAS host failure (motherboard/PSU/boot drive, data drives preserved)
 Move the two data drives to replacement NAS hardware (any x86_64 box with 2 SATA ports + enough RAM), install TrueNAS SCALE, import the `enclosure` pool via the TrueNAS **web GUI** (not CLI — this registers the pool correctly in TrueNAS's config DB). Recreate NFS shares, deploy node_exporter (Custom App, see NAS rebuild steps below), point Proxmox's `/etc/fstab` NFS mounts and `nas-backups` PVE storage at the new IP if it changed. LXCs relying on NFS mounts will be down for the duration (media stack, paperless-ngx); Proxmox itself and NVMe-only containers (ansible, prometheus, grafana, github-runner, k8s) are unaffected.
 
@@ -141,6 +149,7 @@ Note: this key is for the Debian LXCs only. TrueNAS uses a separate `truenas_adm
 - K8s VMs not backed up. Learning environment, rebuild via Ansible takes about 15min.
 - Proxmox host config not versioned. Network and storage configs documented here, but not automatically backed up.
 - NAS is a new dependency for the media stack and paperless-ngx: if the NAS is down, those LXCs lose their data mount (Proxmox itself and NVMe-only containers — ansible, prometheus, grafana, github-runner, k8s — are unaffected, since they don't consume NFS).
+- One ZFS mirror member is currently defective (serial `WD-WCAWZ2181253`, contained read failure in unallocated space) and awaiting a market-constrained replacement. The mirror is not currently degraded and `zpool status` is clean, but the pool is running without effective redundancy margin on that member until the drive is replaced. Monitoring + Discord alerting are in place (see Single drive failure above). A ZFS mirror is redundancy, not a backup — and the media dataset has no off-box copy regardless.
 - TrueNAS config (pool layout, NFS share definitions, cron jobs, node_exporter app config) is **not version-controlled** — it lives only in TrueNAS's own config database. A NAS host-failure rebuild currently means manually recreating shares/schedules/app from this document, not restoring a config file. TrueNAS does support exporting a system config backup (System Settings → General → Manage Configuration) — **not currently scheduled**, worth adding as a follow-up.
 
 ## Maintenance

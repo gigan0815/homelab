@@ -118,7 +118,7 @@ GitHub Actions workflows run on a self-hosted runner deployed on the github-runn
 | Service | Destination | Schedule | Method |
 | --- | --- | --- | --- |
 | paperless-ngx | OneDrive | Daily 02:00 | document_exporter + rclone |
-| LXC containers (100-110) | `nas-backups` (NFS, TrueNAS) | Sun 01:00 | Proxmox vzdump, keep-last=5 — **pending re-enable after NAS migration, see Roadmap** |
+| LXC containers (100-110) | `nas-backups` (NFS, TrueNAS) | Sun 01:00 | Proxmox vzdump, keep-last=5 (validated 2026-07-02; retention aligned in both `storage.cfg` and `jobs.cfg`) |
 
 Storage redundancy is provided via ZFS mirror (2x 3TB drives) on the dedicated NAS — see Storage / NAS section above. Media library has no off-box backup (accepted risk, content is re-downloadable).
 
@@ -135,6 +135,8 @@ Alerts are configured in Grafana and sent to the `#homelab-alerts` Discord chann
 | High disk usage | Disk > 85% | 5m |
 | ZFS Pool Health | Pool state (`enclosure` on TrueNAS) degraded/faulted/suspended/unavail | 0s (immediate) |
 
+TrueNAS also alerts natively (independent of Grafana) to Discord via a TrueNAS Alert Service. Relevant alert classes are set to route at WARNING or above: **Hardware → Failed Selftest** (a failed SMART long test — the primary early-warning signal for the defective drive, since its bad LBA is in unallocated space and does not show in `zpool status`), **Hardware → Uncorrected Errors Detected**, and **Storage → Pool Status Is Not Healthy** (CRITICAL). Delivery is a Discord webhook configured as a "Slack"-type service with `/slack` appended to the webhook URL, tested end-to-end 2026-07-02. See the NAS runbook for the defective-drive monitoring detail and the note not to mute the (expected, monthly-recurring) Failed Selftest alert.
+
 ## Architecture
 
 [![Architecture](https://github.com/gigan0815/homelab/raw/main/docs/architecture.svg)](https://github.com/gigan0815/homelab/blob/main/docs/architecture.svg)
@@ -148,7 +150,7 @@ See [docs/windows-ad-lab.md](https://github.com/gigan0815/homelab/blob/main/docs
 ## Roadmap
 
 - [ ] Expand Ansible roles for all services
-- [ ] Re-enable PVE backup job pointed at `nas-backups` (temporarily disabled during NAS migration)
+- [x] Re-enable PVE backup job pointed at `nas-backups` (validated 2026-07-02)
 - [x] Migrate ZFS pool off Proxmox host (USB enclosure) to dedicated TrueNAS NAS
 - [x] Add Ansible role for Kubernetes cluster setup
 - [x] CI/CD pipeline with GitHub Actions
