@@ -130,7 +130,7 @@ Alerts are configured in Grafana and sent to the `#homelab-alerts` Discord chann
 | --- | --- | --- |
 | Container unreachable | Node Exporter not responding | 2m |
 | High CPU usage | CPU > 80% | 15m |
-| High RAM usage | RAM > 85% | 5m |
+| High RAM usage | RAM > 85% (ZFS ARC excluded) | 5m |
 | High SWAP usage | SWAP > 50% | 10m |
 | High disk usage | Disk > 85% | 5m |
 | ZFS Pool Health | Pool state (`enclosure` on TrueNAS) degraded/faulted/suspended/unavail | 0s (immediate) |
