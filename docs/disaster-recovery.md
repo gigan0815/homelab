@@ -28,14 +28,42 @@ Reinstall Proxmox, restore configs, restore LXC containers from backup on `nas-b
 
 ### Total loss (theft, fire, flood)
 Two separate pieces of hardware to rebuild: Proxmox host and NAS. Acquire replacement hardware for both (any x86_64 with sufficient RAM/storage per requirements below), rebuild NAS first (so `nas-backups` is reachable), then rebuild Proxmox and restore from it.
-Currently a gap: offsite backup not yet configured (neither host). If both are lost simultaneously with no ZFS data drives salvageable, LXC container data is unrecoverable — only code/configs (GitHub) and paperless documents (OneDrive) survive. See Known Gaps section.
+Currently a gap: offsite backup not yet configured (neither host). If both are lost simultaneously with no ZFS data drives salvageable, LXC container data is unrecoverable — only code/configs (GitHub) and paperless documents (OneDrive, originals-only export) survive. See "Paperless documents from OneDrive" below for the restore procedure, and Known Gaps section.
+
+### Paperless documents from OneDrive (last-resort, originals-only)
+
+The OneDrive copy (`onedrive:paperless-backup`, daily 02:00 rclone sync) is the only paperless data that survives a total loss where both the Proxmox host and the NAS are gone. It is an **originals-only** export produced by `document_exporter --no-archive --no-thumbnail --delete`: each document's original file plus `manifest.json` / `metadata.json` (full DB metadata — tags, correspondents, document types, dates, ASNs). Archive PDFs and thumbnails are deliberately excluded to keep the offsite copy small; they are regenerated on restore, not backed up.
+
+This path is only needed when the weekly LXC backup on `nas-backups` is also unavailable — a restored LXC backup already contains the live media directory (originals, archives, thumbnails) and needs none of this. Use the steps below only when paperless must be rebuilt from the OneDrive copy alone.
+
+1. Stand up a paperless-ngx instance to import into. **It must be the same paperless-ngx version the export was taken with** — the manifest embeds an exact image of the DB schema and will not import across versions (migrations change the layout). If unsure, check a recent `metadata.json` (it records the version) before installing.
+2. Pull the export down with `copy`, never `sync` — this direction must not mirror-delete anything:
+   ```
+   rclone copy onedrive:paperless-backup /mnt/USBHDD/paperless-ngx/restore
+   ```
+3. Import (this install runs `manage.py` via `uv` from the source dir, same as the backup role):
+   ```
+   cd /opt/paperless/src
+   uv run manage.py document_importer /mnt/USBHDD/paperless-ngx/restore
+   ```
+4. Regenerate the derived files that were not part of the export:
+   ```
+   uv run manage.py document_thumbnails       # rebuild thumbnails
+   uv run manage.py document_archiver         # re-OCR originals -> archive PDFs
+   ```
+5. (Optional) Confirm integrity:
+   ```
+   uv run manage.py document_sanity_checker
+   ```
+
+Between steps 3 and 4 the documents import and list correctly but have **no thumbnails and are not previewable or full-text searchable** — this is expected for an originals-only export, not data loss. The original files are always intact; `document_archiver` re-runs OCR to rebuild the searchable archive layer, which can take a while on a large archive, so search stays incomplete until it finishes. Note also that API tokens are not included in any export and must be regenerated after import.
 
 ## Backup inventory
 
 | What | Where | Retention |
 |------|-------|-----------|
 | LXC containers (100-110) | `nas-backups` (NFS export `/mnt/enclosure/backups` on TrueNAS, `192.168.1.6`) | 5 latest, weekly Sun 01:00 |
-| Paperless documents | OneDrive `/paperless-backup/` | Daily 02:00, rclone sync |
+| Paperless documents (originals only) | OneDrive `/paperless-backup/` | Daily 02:00, rclone sync |
 | UniFi config | UniFi cloud account | Automatic |
 | Secrets (vault pw, root pw, SSH keys) | Bitwarden "Homelab DR" folder | Manual |
 | Code/configs | GitHub (homelab, homelab-ansible, homelab-kubernetes) | Push-driven |
