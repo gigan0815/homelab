@@ -26,7 +26,7 @@ Common to all containers: unprivileged, `onboot: 1`, root disk on `lvm` (volume 
 - **Jellyfin GPU GIDs are host-specific.** `gid=993` and `gid=44` must match the groups on the restored host, or hardware transcoding breaks.
 - **Bind mounts use `backup=0`.** Media and paperless data are excluded from vzdump. Paperless data is covered by its OneDrive export; media has no off-box copy.
 - **VMID 111 does not exist.** `playbooks/unifi_controller.yml` targets it via `unifi_lxc_id`.
-- **No VMs on the host.** `qm list` is empty, so the Kubernetes nodes and the Windows DC described in the README are not deployed here.
+- **No VMs on the host.** `qm list` is empty.
 
 ## Backup job
 

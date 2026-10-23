@@ -21,7 +21,7 @@ ZFS mirror handles this automatically. Replace failed drive in the TrueNAS box, 
 - **Monitoring/alerting for this is live:** monthly SMART long test (Cron Job, both drives) + TrueNAS Alert Service → Discord on Failed Selftest / Uncorrected Errors / Pool-not-healthy, tested 2026-07-02. The monthly long test will report the known read failure *every month* — that recurring "Failed Selftest" alert is expected; do not mute it, or a genuinely new failure would be missed.
 
 ### NAS host failure (motherboard/PSU/boot drive, data drives preserved)
-Move the two data drives to replacement NAS hardware (any x86_64 box with 2 SATA ports + enough RAM), install TrueNAS SCALE, import the `enclosure` pool via the TrueNAS **web GUI** (not CLI — this registers the pool correctly in TrueNAS's config DB). Recreate NFS shares, deploy node_exporter (Custom App, see NAS rebuild steps below), point Proxmox's `/etc/fstab` NFS mounts and `nas-backups` PVE storage at the new IP if it changed. LXCs relying on NFS mounts will be down for the duration (media stack, paperless-ngx); Proxmox itself and NVMe-only containers (ansible, prometheus, grafana, github-runner, k8s) are unaffected.
+Move the two data drives to replacement NAS hardware (any x86_64 box with 2 SATA ports + enough RAM), install TrueNAS SCALE, import the `enclosure` pool via the TrueNAS **web GUI** (not CLI — this registers the pool correctly in TrueNAS's config DB). Recreate NFS shares, deploy node_exporter (Custom App, see NAS rebuild steps below), point Proxmox's `/etc/fstab` NFS mounts and `nas-backups` PVE storage at the new IP if it changed. LXCs relying on NFS mounts will be down for the duration (media stack, paperless-ngx); Proxmox itself and NVMe-only containers (ansible, prometheus, grafana, github-runner) are unaffected.
 
 ### Proxmox host failure (disk/motherboard, hardware preserved)
 Reinstall Proxmox, restore configs, restore LXC containers from backup on `nas-backups` (NFS, on the NAS — not local to Proxmox anymore). NAS-dependent containers need NFS mounts re-added to `/etc/fstab` and the `nas-backups` NFS storage re-registered before backups are reachable.
@@ -81,7 +81,7 @@ All stored in Bitwarden under "Homelab DR":
 
 **Proxmox host:**
 - x86_64 CPU with virtualization extensions
-- 16GB RAM (current usage allows for K8s VMs to be running)
+- 16GB RAM
 - 1 boot/VM-storage drive (NVMe or SSD, 256GB or larger) — no longer needs local bulk storage, LXCs consume NFS from the NAS
 - Gigabit network
 
@@ -138,13 +138,7 @@ Recovery order (dependency-driven):
 4. github-runner (110), CI/CD
 5. Media stack (101-106): sabnzbd, prowlarr, sonarr, radarr, jellyfin, bazarr
 
-### Phase 4: Kubernetes VMs (optional, learning environment)
-
-**Not present:** the Proxmox host has no VMs as of 2026-10-23, so there are no K8s VMs (800-802) to restore. Rebuilding them is a fresh deployment, not a restore.
-
-K8s VMs (800-802) are not currently backed up. If needed, rebuild via Ansible: ansible-playbook playbooks/kubernetes.yml
-
-### Phase 5: SSH access restoration
+### Phase 4: SSH access restoration
 
 From your workstation, restore the ansible_key from Bitwarden:
 1. Copy private key content to `~/.ssh/ansible_key`
@@ -153,13 +147,13 @@ From your workstation, restore the ansible_key from Bitwarden:
 
 Note: this key is for the Debian LXCs only. TrueNAS uses a separate `truenas_admin` account (not root SSH, not this key) — recover TrueNAS access via its own console/UI setup, not via Ansible.
 
-### Phase 6: GitHub access
+### Phase 5: GitHub access
 
 1. On ansible LXC, generate new SSH key: `ssh-keygen -t ed25519 -f ~/.ssh/github_key`
 2. Add public key to GitHub account settings
 3. Test: `ssh -T -i ~/.ssh/github_key git@github.com`
 
-### Phase 7: Verification
+### Phase 6: Verification
 
 | Service | URL | Verify |
 |---------|-----|--------|
@@ -177,9 +171,8 @@ Note: this key is for the Debian LXCs only. TrueNAS uses a separate `truenas_adm
 ## Known gaps
 
 - No offsite backup of either host. LXC backups live on the NAS, paperless documents live on OneDrive, but the ZFS pool itself and Proxmox VM/LXC configs have no off-site copy. Total-loss scenarios where both the Proxmox host and NAS are destroyed together (e.g. same building, fire/flood) lose all LXC data — only code/configs (GitHub) and paperless documents (OneDrive) survive.
-- K8s VMs not backed up. Learning environment, rebuild via Ansible takes about 15min.
 - Proxmox host config not versioned. Network and storage configs documented here, but not automatically backed up.
-- NAS is a new dependency for the media stack and paperless-ngx: if the NAS is down, those LXCs lose their data mount (Proxmox itself and NVMe-only containers — ansible, prometheus, grafana, github-runner, k8s — are unaffected, since they don't consume NFS).
+- NAS is a new dependency for the media stack and paperless-ngx: if the NAS is down, those LXCs lose their data mount (Proxmox itself and NVMe-only containers — ansible, prometheus, grafana, github-runner — are unaffected, since they don't consume NFS).
 - One ZFS mirror member is currently defective (serial `WD-WCAWZ2181253`, contained read failure in unallocated space) and awaiting a market-constrained replacement. The mirror is not currently degraded and `zpool status` is clean, but the pool is running without effective redundancy margin on that member until the drive is replaced. Monitoring + Discord alerting are in place (see Single drive failure above). A ZFS mirror is redundancy, not a backup — and the media dataset has no off-box copy regardless.
 - TrueNAS config (pool layout, NFS share definitions, cron jobs, node_exporter app config) is **not version-controlled** — it lives only in TrueNAS's own config database. A NAS host-failure rebuild currently means manually recreating shares/schedules/app from this document, not restoring a config file. TrueNAS does support exporting a system config backup (System Settings → General → Manage Configuration) — **not currently scheduled**, worth adding as a follow-up.
 
