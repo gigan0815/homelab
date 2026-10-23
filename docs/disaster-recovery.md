@@ -62,7 +62,7 @@ Between steps 3 and 4 the documents import and list correctly but have **no thum
 
 | What | Where | Retention |
 |------|-------|-----------|
-| LXC containers (100-110) | `nas-backups` (NFS export `/mnt/enclosure/backups` on TrueNAS, `192.168.1.6`) | 5 latest, weekly Sun 01:00 |
+| LXC containers (100-110) | `nas-backups` (NFS export `/mnt/enclosure/backups` on TrueNAS, `192.168.1.6`) | Keep 4 latest + 6 monthly, weekly Sun 01:00 (matches `jobs.cfg` and `storage.cfg` as of 2026-10-23) |
 | Paperless documents (originals only) | OneDrive `/paperless-backup/` | Daily 02:00, rclone sync |
 | UniFi config | UniFi cloud account | Automatic |
 | Secrets (vault pw, root pw, SSH keys) | Bitwarden "Homelab DR" folder | Manual |
@@ -129,6 +129,7 @@ For each container in `nas-backups`:
 2. Select latest `vzdump-lxc-XXX-*.tar.zst`
 3. Restore, choose target storage (`lvm` for OS disk)
 4. For containers 100-106, after restore add the `mp0` bind mount: `mp0: /mnt/nas/paperless,mp=/mnt/USBHDD,backup=0` (CT 100) or `mp0: /mnt/nas/media,mp=/mnt/USBHDD,backup=0` (CT 101-106) — **mount NFS on the Proxmox host and bind-mount into the container; do not mount NFS inside an unprivileged LXC directly.**
+5. Re-apply the non-standard settings in [lxc-inventory.md](lxc-inventory.md): Jellyfin (105) GPU devices (`dev0`/`dev1`, GIDs are host-specific) and the `/dev/net/tun` passthrough and `fuse=1` on sonarr (103) and radarr (104). `/mnt/USBHDD` is the legacy in-container mount point name, not a USB disk.
 
 Recovery order (dependency-driven):
 1. ansible (107), needed for re-configuration
@@ -138,6 +139,8 @@ Recovery order (dependency-driven):
 5. Media stack (101-106): sabnzbd, prowlarr, sonarr, radarr, jellyfin, bazarr
 
 ### Phase 4: Kubernetes VMs (optional, learning environment)
+
+**Not present:** the Proxmox host has no VMs as of 2026-10-23, so there are no K8s VMs (800-802) to restore. Rebuilding them is a fresh deployment, not a restore.
 
 K8s VMs (800-802) are not currently backed up. If needed, rebuild via Ansible: ansible-playbook playbooks/kubernetes.yml
 

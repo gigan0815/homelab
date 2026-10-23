@@ -2,6 +2,8 @@
 
 This document describes the Windows Server lab environment in the homelab. The lab provides hands-on practice with Microsoft Server, Active Directory Domain Services, DNS, and Group Policy, complementing the existing Linux-focused setup.
 
+> **Status (2026-10-23):** Not running. The Proxmox host has no VMs, so dc01 (VMID 200) is not currently deployed. The sections below describe the lab as it was configured.
+
 ## Purpose
 
 - Practice Microsoft Server administration tasks hands-on.
