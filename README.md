@@ -43,6 +43,8 @@ Repository: [homelab-ansible](https://github.com/gigan0815/homelab-ansible)
 | grafana | 192.168.1.22 | 3000 | Metrics visualization |
 | github-runner | 192.168.1.23 | - | GitHub Actions self-hosted runner |
 
+Per-container config (resources, mounts, GPU and TUN passthrough) is in [docs/lxc-inventory.md](docs/lxc-inventory.md).
+
 ## Storage / NAS
 
 Bulk storage runs on a dedicated **TrueNAS SCALE** box, separate from the Proxmox host. Originally the 2x 3TB ZFS mirror lived in a USB enclosure attached directly to the PN52 (see Roadmap); the enclosure's USB bridge proved unreliable, so the drives were moved to native SATA on standalone NAS hardware.
@@ -79,32 +81,9 @@ Current playbooks:
 - `node_exporter.yml` - deploys Node Exporter on all containers
 - `prometheus.yml` - deploys Prometheus on the monitoring container
 - `grafana.yml` - deploys Grafana on the monitoring container
-- `kubernetes.yml` - deploys Kubernetes cluster on VMs
-- `github_runner.yml` - deploys GitHub Actions self-hosted runner
+- `github-runner.yml` - deploys GitHub Actions self-hosted runner
 
 The NAS (TrueNAS SCALE) is **not** Ansible-managed — it's an appliance OS with its own update mechanism and Apps/Docker system for deploying services (e.g. node_exporter). It's listed in the Ansible inventory for reference only and explicitly excluded from `update.yml` and `node_exporter.yml`. NFS shares are configured through the TrueNAS UI, not `/etc/exports`.
-
-## Kubernetes
-
-3-node cluster running on Proxmox VMs for learning purposes.
-Cluster setup is automated via Ansible, see [homelab-ansible](https://github.com/gigan0815/homelab-ansible).
-Kubernetes manifests are managed in a separate repository, see [homelab-kubernetes](https://github.com/gigan0815/homelab-kubernetes).
-
-| Node | IP | Role |
-| --- | --- | --- |
-| k8smaster | 192.168.1.80 | control-plane |
-| k8sworker1 | 192.168.1.81 | worker |
-| k8sworker2 | 192.168.1.82 | worker |
-
-## Windows Server / Active Directory
-
-Windows Server 2022 VM running as a Domain Controller for the `homelab.local` domain. Built to practice Microsoft Server administration, Active Directory Domain Services, DNS, and Group Policy via PowerShell.
-
-| Node | IP | Role |
-| --- | --- | --- |
-| dc01 | 192.168.1.50 | Domain Controller, DNS server |
-
-See [docs/windows-ad-lab.md](https://github.com/gigan0815/homelab/blob/main/docs/windows-ad-lab.md) for the full setup, OU structure, users, groups, and operational commands.
 
 ## CI/CD
 
@@ -118,7 +97,7 @@ GitHub Actions workflows run on a self-hosted runner deployed on the github-runn
 | Service | Destination | Schedule | Method |
 | --- | --- | --- | --- |
 | paperless-ngx | OneDrive | Daily 02:00 | document_exporter + rclone |
-| LXC containers (100-110) | `nas-backups` (NFS, TrueNAS) | Sun 01:00 | Proxmox vzdump, keep-last=5 (validated 2026-07-02; retention aligned in both `storage.cfg` and `jobs.cfg`) |
+| LXC containers (100-110) | `nas-backups` (NFS, TrueNAS) | Sun 01:00 | Proxmox vzdump, keep-last=4, keep-monthly=6 (matches `storage.cfg` and `jobs.cfg` as of 2026-10-23) |
 
 Storage redundancy is provided via ZFS mirror (2x 3TB drives) on the dedicated NAS — see Storage / NAS section above. Media library has no off-box backup (accepted risk, content is re-downloadable).
 
@@ -145,16 +124,11 @@ TrueNAS also alerts natively (independent of Grafana) to Discord via a TrueNAS A
 
 See [docs/disaster-recovery.md](https://github.com/gigan0815/homelab/blob/main/docs/disaster-recovery.md) for the recovery procedure, backup inventory, and known gaps.
 
-See [docs/windows-ad-lab.md](https://github.com/gigan0815/homelab/blob/main/docs/windows-ad-lab.md) for the Windows Server / Active Directory lab setup.
-
 ## Roadmap
 
 - [ ] Expand Ansible roles for all services
 - [x] Re-enable PVE backup job pointed at `nas-backups` (validated 2026-07-02)
 - [x] Migrate ZFS pool off Proxmox host (USB enclosure) to dedicated TrueNAS NAS
-- [x] Add Ansible role for Kubernetes cluster setup
 - [x] CI/CD pipeline with GitHub Actions
 - [x] Migrate USB RAID to ZFS mirror
-- [x] Set up Kubernetes cluster (learning environment)
 - [x] Deploy monitoring stack (Prometheus + Grafana)
-- [x] Windows Server AD lab (Domain Controller, OU structure, users, groups, GPO)
